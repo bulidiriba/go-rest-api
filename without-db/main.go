@@ -65,6 +65,29 @@ func deleteEvent(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
+
+func updateEvent(w http.ResponseWriter, r *http.Request) {
+	eventID := mux.Vars(r)["id"]
+	var updatedEvent event
+
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, "kindly enter data with the event title and description only in order to update")
+	}
+
+	json.Unmarshal(reqBody, &updatedEvent)
+
+	for i, singleEvent := range sampleEvents {
+		if singleEvent.ID == eventID {
+			singleEvent.Title = updatedEvent.Title
+			singleEvent.Description = updatedEvent.Description
+			sampleEvents = append(sampleEvents[:i], singleEvent)
+			json.NewEncoder(w).Encode(singleEvent)
+
+		}
+	}
+}
+
 func homeLink(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "welcome home")
 }
@@ -73,8 +96,9 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", homeLink)
 	router.HandleFunc("/event", createEvent).Methods("POST")
-	router.HandleFunc("/events/{id}", getOneEvent).Methods("GET")
 	router.HandleFunc("/events", getAllEvents).Methods("GET")
+	router.HandleFunc("/events/{id}", getOneEvent).Methods("GET")
 	router.HandleFunc("/events/{id}", deleteEvent).Methods("DELETE")
+	router.HandleFunc("/events/{id}", updateEvent).Methods("PATCH")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
