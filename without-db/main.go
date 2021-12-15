@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -36,6 +37,18 @@ func getOneEvent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func createEvent(w http.ResponseWriter, r *http.Request) {
+	var newEvent event
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, "kindly enter data with the event title and description only in order to update")
+	}
+
+	json.Unmarshal(reqBody, &newEvent)
+	sampleEvents = append(sampleEvents, newEvent)
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(newEvent)
+}
 func homeLink(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "welcome home")
 }
@@ -44,5 +57,6 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", homeLink)
 	router.HandleFunc("/events/{id}", getOneEvent).Methods("GET")
+	router.HandleFunc("/event", createEvent).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
