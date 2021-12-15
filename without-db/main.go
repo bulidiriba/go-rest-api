@@ -53,6 +53,18 @@ func createEvent(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(newEvent)
 }
+
+func deleteEvent(w http.ResponseWriter, r *http.Request) {
+	eventId := mux.Vars(r)["id"]
+
+	for i, singleEvent := range sampleEvents {
+		if singleEvent.ID == eventId {
+			sampleEvents = append(sampleEvents[:i], sampleEvents[i+1:]...)
+			fmt.Fprintf(w, "The event with ID %v has been deleted successfully", eventId)
+		}
+
+	}
+}
 func homeLink(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "welcome home")
 }
@@ -63,5 +75,6 @@ func main() {
 	router.HandleFunc("/event", createEvent).Methods("POST")
 	router.HandleFunc("/events/{id}", getOneEvent).Methods("GET")
 	router.HandleFunc("/events", getAllEvents).Methods("GET")
+	router.HandleFunc("/events/{id}", deleteEvent).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
