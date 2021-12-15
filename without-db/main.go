@@ -37,6 +37,10 @@ func getOneEvent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getAllEvents(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(sampleEvents)
+}
+
 func createEvent(w http.ResponseWriter, r *http.Request) {
 	var newEvent event
 	reqBody, err := ioutil.ReadAll(r.Body)
@@ -56,7 +60,8 @@ func homeLink(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", homeLink)
-	router.HandleFunc("/events/{id}", getOneEvent).Methods("GET")
 	router.HandleFunc("/event", createEvent).Methods("POST")
+	router.HandleFunc("/events/{id}", getOneEvent).Methods("GET")
+	router.HandleFunc("/events", getAllEvents).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
